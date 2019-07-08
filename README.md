@@ -3,8 +3,11 @@
 
 # 如何使用
 ```shell
-python douyu_danmu.py <room id> [--save]
+# 1.安装依赖
+pip install -r requirments.txt
 
+# 2.运行
+python douyu_danmu.py <room id> [--save]
 # 比如
 python douyu_danmu.py 9418
 ```
