@@ -13,7 +13,6 @@ dy = DouyuChatMsgHandler()
 def signal_handler(signal, frame):
     dy.stop()
     print("bye...")
-    # raise KeyboardInterrupt
 
 
 def main():

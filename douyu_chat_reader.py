@@ -18,7 +18,6 @@ class DouyuChatReader(object):
         self._stop_lock = threading.Lock()
 
         self._recv_thread = None
-        self._keep_thread = None
         self._is_stop = False
 
     HEART_INTERVAL = 35
@@ -87,7 +86,6 @@ class DouyuChatReader(object):
             try:
                 res += self._conn.recv(num - len(res))
             except socket.timeout:
-                print("socket time out....")
                 continue
         return res
 
@@ -103,8 +101,14 @@ class DouyuChatReader(object):
     def _recv_data(self):
         self._conn.settimeout(1)
 
+        last_keep = int(time.time())
         while not self.is_stop():
             self._handle_recv_data(self._recv_douyu_msg())
+
+            # 最多一秒recv就会超时，每隔35秒发一次心跳就好
+            if int(time.time()) - last_keep >= self.HEART_INTERVAL:
+                self._send_heartbeat()
+                last_keep = int(time.time())
 
     def _handle_recv_data(self, data):
         pass
@@ -112,16 +116,6 @@ class DouyuChatReader(object):
     def _send_heartbeat(self):
         msg = "type@=keeplive/tick@=" + str(int(time.time())) + "/\0"
         self._send_req_msg(msg)
-
-    def keep_live(self):
-        while not self.is_stop():
-            # print("心跳...")
-            self._send_heartbeat()
-
-            try:
-                time.sleep(self.HEART_INTERVAL)
-            except KeyboardInterrupt:
-                break
 
     def _is_ready(self):
         if self._room_id is not None:
@@ -138,10 +132,7 @@ class DouyuChatReader(object):
         self._login()
         self._join_group()
 
-        self._keep_thread = threading.Thread(target=DouyuChatReader.keep_live, args=(self,))
         self._recv_thread = threading.Thread(target=DouyuChatReader._recv_data, args=(self,))
-
-        self._keep_thread.start()
         self._recv_thread.start()
 
     def is_stop(self):
@@ -157,7 +148,7 @@ class DouyuChatReader(object):
         self._stop_lock.release()
 
     def stop(self):
-        if None in (self._keep_thread, self._recv_thread):
+        if self._recv_thread is None:
             return
 
         if not self._recv_thread.is_alive():
@@ -166,7 +157,6 @@ class DouyuChatReader(object):
         self._set_is_stop(True)
 
         self._recv_thread.join()
-        # self._keep_thread.join()
 
         self._logout()
 
