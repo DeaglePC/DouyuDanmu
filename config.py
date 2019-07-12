@@ -17,5 +17,5 @@ SAVE_CONFIG = {
     52319: 3,
 }
 
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://ddyy:123@localhost/danmu")
-DB_NAME = "danmu"
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://user:pw@localhost/db")
+DB_NAME = "db"
