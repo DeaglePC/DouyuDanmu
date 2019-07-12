@@ -21,7 +21,6 @@ class DouyuChatReader(object):
         self._is_stop = False
 
     HEART_INTERVAL = 35
-    RECV_BUF_SIZE = 1024
     HEADER_SIZE = 12  # 4 + 4 + 2 + 1 + 1
 
     def _connect_chat_server(self):
@@ -82,7 +81,7 @@ class DouyuChatReader(object):
             raise TypeError
 
         res = bytearray()
-        while len(res) < num:
+        while len(res) < num and not self.is_stop():
             try:
                 res += self._conn.recv(num - len(res))
             except socket.timeout:
