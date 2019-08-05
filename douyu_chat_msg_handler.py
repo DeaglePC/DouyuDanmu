@@ -10,9 +10,11 @@ from douyu_chat_reader import DouyuChatReader
 from douyu_chat_msg_parser import DouyuChatMsgFormatTool
 import config
 
+TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
 
 def format_date(timestamp):
-    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp / 1000))
+    return time.strftime(TIME_FORMAT, time.localtime(timestamp / 1000))
 
 
 class MsgType:
@@ -48,10 +50,11 @@ class DouyuChatMsgHandler(DouyuChatReader):
             print(err)
             self._db = None
 
-        self._collection_name = self._get_coll_name(room_id) if room_id else None
+        self._collection_name = self.get_coll_name(room_id) if room_id else None
 
         self._need_save = False
         self._save_buf = list()
+        self._display_color = None
 
     @property
     def need_save(self):
@@ -61,8 +64,11 @@ class DouyuChatMsgHandler(DouyuChatReader):
         if isinstance(need_save, bool):
             self._need_save = need_save
 
+    def set_color(self, color):
+        self._display_color = color
+
     @staticmethod
-    def _get_coll_name(id_):
+    def get_coll_name(id_):
         return "dy_" + str(id_)
 
     @staticmethod
@@ -80,10 +86,10 @@ class DouyuChatMsgHandler(DouyuChatReader):
             "time": format_date(int(res_data.get("cst"))) if res_data.get("cst") else "",
         }
 
-    @staticmethod
-    def _display_chat_data(data_dict):
+    def _display_chat_data(self, data_dict):
+        color = self._display_color if self._display_color else ""
         print(
-            "[{}] {} ({}): {}".format(
+            color + "[{}] {} ({}): {}".format(
                 data_dict["time"], data_dict["username"], data_dict["level"], data_dict["content"]
             )
         )
@@ -145,4 +151,4 @@ class DouyuChatMsgHandler(DouyuChatReader):
 
     def set_room(self, room_id):
         super().set_room(room_id)
-        self._collection_name = self._get_coll_name(room_id)
+        self._collection_name = self.get_coll_name(room_id)

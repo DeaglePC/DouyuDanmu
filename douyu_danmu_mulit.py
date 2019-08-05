@@ -7,19 +7,22 @@ import config
 
 class DouyuDanmuCollector:
 
-    def __init__(self, rooms):
-        if not rooms:
-            return
+    def __init__(self, cfg):
+        if not cfg or not isinstance(cfg, dict):
+            raise TypeError
 
-        self._rooms = rooms
+        self._rooms_cfg = cfg
         self._dys = list()
 
         self._init_dy()
 
     def _init_dy(self):
-        for room in self._rooms:
+        for room, cfg in self._rooms_cfg.items():
             tmp_dy = DouyuChatMsgHandler(room)
+
             tmp_dy.set_save(True)
+            tmp_dy.set_color(cfg["color"])
+
             self._dys.append(tmp_dy)
 
     def start(self):
@@ -31,7 +34,7 @@ class DouyuDanmuCollector:
             dy.stop()
 
 
-dy_dm_collector = DouyuDanmuCollector([v for k, v in config.ROOMS.items()])
+dy_dm_collector = DouyuDanmuCollector(config.COLLECTOR_ROOMS_CFG)
 
 
 def signal_handler(signal, frame):
