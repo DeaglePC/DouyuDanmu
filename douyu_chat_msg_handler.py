@@ -104,7 +104,7 @@ class DouyuChatMsgHandler(DouyuChatReader):
 
         self._save_buf.append(data_dict)
 
-        if len(self._save_buf) == config.SAVE_CONFIG.get(self._room_id, 1):
+        if len(self._save_buf) == config.COLLECTOR_ROOMS_CFG[self._room_id].get("save_rate", 2):
             col = self._db[self._collection_name]
             col.insert_many(self._save_buf)
             self._save_buf.clear()
