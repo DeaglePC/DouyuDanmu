@@ -89,8 +89,8 @@ class DouyuChatMsgHandler(DouyuChatReader):
     def _display_chat_data(self, data_dict):
         color = self._display_color if self._display_color else ""
         print(
-            color + "[{}] {} ({}): {}".format(
-                data_dict["time"], data_dict["username"], data_dict["level"], data_dict["content"]
+            color + "[{}] [{}] {} ({}): {}".format(
+                self._room_id, data_dict["time"], data_dict["username"], data_dict["level"], data_dict["content"]
             )
         )
 
