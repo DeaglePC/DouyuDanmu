@@ -8,6 +8,8 @@ import time
 import struct
 import asyncio
 
+BUFFER_LIMIT = 2 ** 20
+
 
 class DouyuChatReader(object):
 
@@ -25,7 +27,7 @@ class DouyuChatReader(object):
         host = socket.gethostbyname("openbarrage.douyutv.com")
         port = 8601
 
-        self._reader, self._writer = await asyncio.open_connection(host, port)
+        self._reader, self._writer = await asyncio.open_connection(host, port, limit=BUFFER_LIMIT)
         print(f"[{self._room_id}] 连接弹幕服务器成功...")
 
     @staticmethod
@@ -101,12 +103,15 @@ class DouyuChatReader(object):
         if not self._is_ready():
             return
 
-        self._set_is_stop(False)
-
-        await self._connect_chat_server()
-        await self._login()
-        await self._join_group()
-        await self._recv_data()
+        while True:
+            try:
+                self._set_is_stop(False)
+                await self._connect_chat_server()
+                await self._login()
+                await self._join_group()
+                await self._recv_data()
+            except ConnectionResetError as err:
+                print(err)
 
     def is_stop(self):
         return self._is_stop
@@ -114,14 +119,14 @@ class DouyuChatReader(object):
     def _set_is_stop(self, is_stop):
         self._is_stop = is_stop
 
-    async def stop(self):
-        self._set_is_stop(True)
-
-        await self._logout()
-
-        self._writer.close()
-        await self._writer.wait_closed()
-        print(f"[{self._room_id}] 退出弹幕服务器...")
+    # async def stop(self):
+    #     self._set_is_stop(True)
+    #     await self._logout()
+    #
+    #     self._writer.close()
+    #     await self._writer.wait_closed()
+    #
+    #     print(f"[{self._room_id}] 退出弹幕服务器...")
 
     def set_room(self, room_id):
         if not isinstance(room_id, int):

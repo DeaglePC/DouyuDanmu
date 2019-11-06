@@ -110,9 +110,12 @@ class DouyuChatMsgHandler(DouyuChatReader):
             self._save_buf.clear()
 
     def _handle_chat_msg(self, res_data):
-        chat_msg_dict = self._format_chat_msg(res_data)
-        self._display_chat_data(chat_msg_dict)
-        self._save_data(chat_msg_dict) if self.need_save else None
+        try:
+            chat_msg_dict = self._format_chat_msg(res_data)
+            self._display_chat_data(chat_msg_dict)
+            self._save_data(chat_msg_dict) if self.need_save else None
+        except Exception as err:
+            print(err)
 
     @staticmethod
     def _display_gift_msg(res_data):
